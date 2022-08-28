@@ -22,9 +22,11 @@ import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.UncaughtErrorEvent;
+#if sys
 import sys.FileSystem;
 import sys.io.File;
 import sys.io.Process;
+#end
 
 // Here we actually import the states and metadata, and just the metadata.
 // It's nice to have modularity so that we don't have ALL elements loaded at the same time.
@@ -205,6 +207,7 @@ class Main extends Sprite
 
 	function onCrash(e:UncaughtErrorEvent):Void
 	{
+		#if CRASH_DIALOG
 		var errMsg:String = "";
 		var path:String;
 		var callStack:Array<StackItem> = CallStack.exceptionStack(true);
@@ -254,5 +257,6 @@ class Main extends Sprite
 		}
 
 		Sys.exit(1);
+		#end
 	}
 }

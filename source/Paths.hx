@@ -14,8 +14,10 @@ import openfl.media.Sound;
 import openfl.system.System;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
+#if sys
 import sys.FileSystem;
 import sys.io.File;
+#end
 
 class Paths
 {
@@ -121,12 +123,14 @@ class Paths
 	public static function returnGraphic(key:String, ?library:String, ?textureCompression:Bool = false)
 	{
 		var path = getPath('images/$key.png', IMAGE, library);
-		if (FileSystem.exists(path))
+		if (#if sys FileSystem.exists #else Assets.exists #end (path))
 		{
 			if (!currentTrackedAssets.exists(key))
 			{
-				var bitmap = BitmapData.fromFile(path);
 				var newGraphic:FlxGraphic;
+
+				#if !html5
+				var bitmap = BitmapData.fromFile(path);
 				if (textureCompression)
 				{
 					var texture = FlxG.stage.context3D.createTexture(bitmap.width, bitmap.height, BGRA, true, 0);
@@ -143,6 +147,9 @@ class Paths
 					newGraphic = FlxGraphic.fromBitmapData(bitmap, false, key, false);
 					trace('new bitmap $key, not textured');
 				}
+				#else
+				newGraphic = FlxG.bitmap.add(key, false, key);
+				#end
 				currentTrackedAssets.set(key, newGraphic);
 			}
 			localTrackedAssets.push(key);
@@ -159,13 +166,13 @@ class Paths
 		gottenPath = gottenPath.substring(gottenPath.indexOf(':') + 1, gottenPath.length);
 		// trace(gottenPath);
 		if (!currentTrackedSounds.exists(gottenPath))
-			currentTrackedSounds.set(gottenPath, Sound.fromFile(gottenPath));
+			currentTrackedSounds.set(gottenPath, #if html5 OpenFlAssets.getSound(gottenPath) #else Sound.fromFile(gottenPath) #end);
 		localTrackedAssets.push(key);
 		return currentTrackedSounds.get(gottenPath);
 	}
 
 	//
-	inline public static function getPath(file:String, type:AssetType, ?library:Null<String>)
+	public static function getPath(file:String, type:AssetType, ?library:Null<String>)
 	{
 		/*
 				Okay so, from what I understand, this loads in the current path based on the level
@@ -180,18 +187,21 @@ class Paths
 		if (library != null)
 			return getLibraryPath(file, library);
 
-		/*
-			if (currentLevel != null)
+		if (currentLevel != null)
+		{
+			var levelPath = '';
+			if(currentLevel != "shared")
 			{
 				levelPath = getLibraryPathForce(file, currentLevel);
 				if (OpenFlAssets.exists(levelPath, type))
 					return levelPath;
+			}
 
-				levelPath = getLibraryPathForce(file, "shared");
-				if (OpenFlAssets.exists(levelPath, type))
-					return levelPath;
-		}*/
-
+			levelPath = getLibraryPathForce(file, "shared");
+			if (OpenFlAssets.exists(levelPath, type))
+				return levelPath;
+		}
+		
 		var levelPath = getLibraryPathForce(file, "mods");
 		if (OpenFlAssets.exists(levelPath, type))
 			return levelPath;
@@ -228,7 +238,7 @@ class Paths
 	inline static function getPreloadPath(file:String)
 	{
 		var returnPath:String = 'assets/$file';
-		if (!FileSystem.exists(returnPath))
+		if (#if sys !FileSystem.exists #else !OpenFlAssets.exists #end (returnPath))
 			returnPath = CoolUtil.swapSpaceDash(returnPath);
 		return returnPath;
 	}
@@ -306,7 +316,7 @@ class Paths
 	inline static public function getSparrowAtlas(key:String, ?library:String)
 	{
 		var graphic:FlxGraphic = returnGraphic(key, library);
-		return (FlxAtlasFrames.fromSparrow(graphic, File.getContent(file('images/$key.xml', library))));
+		return (FlxAtlasFrames.fromSparrow(graphic, #if sys File.getContent #else Assets.getText #end(file('images/$key.xml', library))));
 	}
 
 	inline static public function getPackerAtlas(key:String, ?library:String)

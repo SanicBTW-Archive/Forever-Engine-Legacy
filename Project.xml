@@ -29,6 +29,7 @@
 	<!-- _____________________________ Custom Defines ____________________________ -->
 	
 	<define name="DISCORD_RPC" if="desktop" unless="web || neko" />
+	<define name="CRASH_DIALOG" if="windows"/>
 
 	<!-- _____________________________ Path Settings ____________________________ -->
 

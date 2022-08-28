@@ -299,12 +299,21 @@ class Init extends FlxState
 			trueSettings.set("Stage Opacity", 100);
 
 		// 'hardcoded' ui skins
+
+		//html5 cant read directories so the function returns []
+		#if sys
 		gameSettings.get("UI Skin")[4] = CoolUtil.returnAssetsLibrary('UI');
 		if (!gameSettings.get("UI Skin")[4].contains(trueSettings.get("UI Skin")))
 			trueSettings.set("UI Skin", 'default');
 		gameSettings.get("Note Skin")[4] = CoolUtil.returnAssetsLibrary('noteskins/notes');
 		if (!gameSettings.get("Note Skin")[4].contains(trueSettings.get("Note Skin")))
 			trueSettings.set("Note Skin", 'default');
+		#else
+		if (!gameSettings.get("UI Skin")[4].includes(trueSettings.get("UI Skin")))
+			trueSettings.set("UI Skin", 'default');
+		if (!gameSettings.get("Note Skin")[4].includes(trueSettings.get("Note Skin")))
+			trueSettings.set("Note Skin", 'default');
+		#end
 
 		saveSettings();
 

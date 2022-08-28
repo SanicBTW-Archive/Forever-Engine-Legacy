@@ -38,9 +38,12 @@ import openfl.events.KeyboardEvent;
 import openfl.filters.ShaderFilter;
 import openfl.media.Sound;
 import openfl.utils.Assets;
-import sys.io.File;
 
 using StringTools;
+
+#if sys
+import sys.io.File;
+#end
 
 #if desktop
 import meta.data.dependency.Discord;
@@ -1827,11 +1830,11 @@ class PlayState extends MusicBeatState
 	function callTextbox()
 	{
 		var dialogPath = Paths.json(SONG.song.toLowerCase() + '/dialogue');
-		if (sys.FileSystem.exists(dialogPath))
+		if (#if sys sys.FileSystem.exists #else Assets.exists #end(dialogPath))
 		{
 			startedCountdown = false;
 
-			dialogueBox = DialogueBox.createDialogue(sys.io.File.getContent(dialogPath));
+			dialogueBox = DialogueBox.createDialogue(#if sys sys.io.File.getContent #else Assets.getText #end(dialogPath));
 			dialogueBox.cameras = [dialogueHUD];
 			dialogueBox.whenDaFinish = startCountdown;
 

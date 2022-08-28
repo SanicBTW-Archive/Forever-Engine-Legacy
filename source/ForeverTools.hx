@@ -4,7 +4,9 @@ import flixel.FlxG;
 import flixel.system.FlxSound;
 import meta.data.*;
 import openfl.utils.Assets;
+#if sys
 import sys.FileSystem;
+#end
 
 /**
 	This class is used as an extension to many other forever engine stuffs, please don't delete it as it is not only exclusively used in forever engine
@@ -32,10 +34,10 @@ class ForeverTools
 			?defaultChangeableSkin:String = 'default', ?defaultBaseAsset:String = 'base'):String
 	{
 		var realAsset = '$baseLibrary/$changeableSkin/$assetModifier/$asset';
-		if (!FileSystem.exists(Paths.getPath('images/' + realAsset + '.png', IMAGE)))
+		if (#if sys !FileSystem.exists #else !Assets.exists #end(Paths.getPath('images/' + realAsset + '.png', IMAGE)))
 		{
 			realAsset = '$baseLibrary/$defaultChangeableSkin/$assetModifier/$asset';
-			if (!FileSystem.exists(Paths.getPath('images/' + realAsset + '.png', IMAGE)))
+			if (#if sys !FileSystem.exists #else !Assets.exists #end(Paths.getPath('images/' + realAsset + '.png', IMAGE)))
 				realAsset = '$baseLibrary/$defaultChangeableSkin/$defaultBaseAsset/$asset';
 		}
 

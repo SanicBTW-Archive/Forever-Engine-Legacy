@@ -20,11 +20,15 @@ import meta.data.Song.SwagSong;
 import meta.data.dependency.Discord;
 import meta.data.font.Alphabet;
 import openfl.media.Sound;
+
+using StringTools;
+
+#if sys
 import sys.FileSystem;
 import sys.thread.Mutex;
 import sys.thread.Thread;
+#end
 
-using StringTools;
 
 class FreeplayState extends MusicBeatState
 {
@@ -40,10 +44,9 @@ class FreeplayState extends MusicBeatState
 	var diffText:FlxText;
 	var lerpScore:Int = 0;
 	var intendedScore:Int = 0;
-
-	var songThread:Thread;
+	var songThread: #if sys Thread #else Dynamic #end;
 	var threadActive:Bool = true;
-	var mutex:Mutex;
+	var mutex:#if sys Mutex #else Dynamic #end;
 	var songToPlay:Sound = null;
 
 	private var grpSongs:FlxTypedGroup<Alphabet>;
@@ -62,7 +65,9 @@ class FreeplayState extends MusicBeatState
 	{
 		super.create();
 
+		#if sys
 		mutex = new Mutex();
+		#end
 
 		/**
 			Wanna add songs? They're in the Main state now, you can just find the week array and add a song there to a specific week.
@@ -87,7 +92,7 @@ class FreeplayState extends MusicBeatState
 			if (!existingSongs.contains(i.toLowerCase()))
 			{
 				var icon:String = 'gf';
-				var chartExists:Bool = FileSystem.exists(Paths.songJson(i, i));
+				var chartExists:Bool = #if sys FileSystem.exists #else Assets.exists #end(Paths.songJson(i, i));
 				if (chartExists)
 				{
 					var castSong:SwagSong = Song.loadFromJson(i, i);
@@ -162,8 +167,8 @@ class FreeplayState extends MusicBeatState
 		///*
 		var coolDifficultyArray = [];
 		for (i in CoolUtil.difficultyArray)
-			if (FileSystem.exists(Paths.songJson(songName, songName + '-' + i))
-				|| (FileSystem.exists(Paths.songJson(songName, songName)) && i == "NORMAL"))
+			if (#if sys FileSystem.exists #else Assets.exists #end(Paths.songJson(songName, songName + '-' + i))
+				|| (#if sys FileSystem.exists #else Assets.exists #end(Paths.songJson(songName, songName)) && i == "NORMAL"))
 				coolDifficultyArray.push(i);
 
 		if (coolDifficultyArray.length > 0)
@@ -340,6 +345,7 @@ class FreeplayState extends MusicBeatState
 
 	function changeSongPlaying()
 	{
+		#if sys
 		if (songThread == null)
 		{
 			songThread = Thread.create(function()
@@ -380,6 +386,7 @@ class FreeplayState extends MusicBeatState
 		}
 
 		songThread.sendMessage(curSelected);
+		#end
 	}
 
 	var playingSongs:Array<FlxSound> = [];
